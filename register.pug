@@ -1,0 +1,25 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    title Movie Weekend Planner - Register
+    link(rel='stylesheet', href='/styles/styles.css')
+  body
+    include header.pug
+    main
+      .auth-container
+        h2 Create Account
+        if error
+          p.auth-error= error
+        form(action='/register', method='POST')
+          label(for='username') Username
+          input#username(type='text', name='username', placeholder='Choose a username', required)
+          label(for='password') Password
+          input#password(type='password', name='password', placeholder='Choose a password', required)
+          .privacy-check
+            input#privacy(type='checkbox', name='privacy')
+            label(for='privacy') Make my profile private
+          button(type='submit') Register
+        p.auth-switch
+          | Already have an account?&nbsp;
+          a(href='/login') Sign in here

@@ -1,0 +1,101 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    title= 'Profile - ' + profileUser.username
+    link(rel='stylesheet', href='/styles/styles.css')
+  body
+    include header.pug
+    .stats-container
+      h2 #{profileUser.username}'s Profile
+
+      .service-edit
+        h3 Account Settings
+        label Username
+        input#editUsername(type='text', value=profileUser.username)
+        label Password
+        input#editPassword(type='password', placeholder='*****')
+        label Confirm Password
+        input#editConfirm(type='password', placeholder='Confirm password')
+        .privacy-check
+          input#editPrivacy(type='checkbox', checked=profileUser.privacy)
+          label(for='editPrivacy') Private profile
+        button#saveProfileBtn Save Changes
+
+      hr
+
+      h3 Order History
+      if orders.length === 0
+        p No orders placed yet.
+      else
+        each order in orders
+          .order-card
+            p
+              strong Order ID:&nbsp;
+              | #{order._id}
+            table.movies-table
+              thead
+                tr
+                  th Service
+                  th Fee
+              tbody
+                each fee, svcName in order.fees
+                  tr
+                    td= svcName
+                    td $#{fee.toFixed(2)}
+            p
+              strong Subtotal:&nbsp;
+              | $#{order.subtotal.toFixed(2)}
+            p
+              strong Tax:&nbsp;
+              | $#{order.tax.toFixed(2)}
+            p
+              strong Total:&nbsp;
+              | $#{order.total.toFixed(2)}
+            h4 Movies Ordered
+            each movieList, svcName in order.movies
+              p
+                strong= svcName
+              table.movies-table
+                thead
+                  tr
+                    th ID
+                    th Title
+                    th Year
+                tbody
+                  each movie in movieList
+                    tr
+                      td= movie.id
+                      td= movie.title
+                      td= movie.year
+
+    script.
+      const PROFILE_UID = '!{profileUser._id}';
+
+      document.getElementById('saveProfileBtn').addEventListener('click', () => {
+        const username = document.getElementById('editUsername').value.trim();
+        const password = document.getElementById('editPassword').value;
+        const confirm  = document.getElementById('editConfirm').value;
+        const privacy  = document.getElementById('editPrivacy').checked;
+
+        if (!username || !password || !confirm) {
+          alert('All fields must be filled in.');
+          return;
+        }
+        if (password !== confirm) {
+          alert('Passwords do not match.');
+          return;
+        }
+
+        fetch('/users/' + PROFILE_UID, {
+          method : 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body   : JSON.stringify({ username, password, privacy })
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) alert('Profile updated successfully.');
+            else alert('Error: ' + data.message);
+          })
+          .catch(err => alert('Error: ' + err));
+      });

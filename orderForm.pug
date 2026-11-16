@@ -1,0 +1,36 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    title Movie Weekend Planner - Order Form
+    link(rel='stylesheet', href='/styles/styles.css')
+  body
+    include header.pug
+    main
+      .centered
+        label(for='serviceSelect') Select Streaming Service:&nbsp;
+      .centered
+        select#serviceSelect
+          option(value='') -- Select a Service --
+          each service in services
+            option(value=service.id)= service.name
+
+      div#serviceInfo.hidden
+        h2#serviceName
+        p#serviceDetails
+
+      div#genreBar.hidden
+
+      div#mainContent.hidden.layout
+        div.leftColumn
+          h2#moviesHeading Movies
+          ul#moviesList
+
+        div.rightColumn
+          h2 Current Order
+          div#orderSummary
+
+    script.
+      const streamingServicesData = !{JSON.stringify(services)};
+
+    script(src='/scripts/interact.js')

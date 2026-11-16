@@ -1,0 +1,154 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    title= 'Edit Service - ' + service.name
+    link(rel='stylesheet', href='/styles/styles.css')
+  body
+    include header.pug
+    .stats-container
+      h2= service.name
+
+      .service-edit
+        h3 Service Details
+        label Name:
+        input#editName(type='text', value=service.name)
+        br
+        label Service Fee: $
+        input#editFee(type='number', step='0.01', value=service.serviceFee)
+        br
+        label Minimum Order: $
+        input#editMin(type='number', step='0.01', value=service.minOrder)
+        br
+        button#saveBtn Save Changes
+
+      hr
+
+      .add-genre
+        h3 Add Genre
+        input#newGenreName(type='text', placeholder='Genre name')
+        button#addGenreBtn Add Genre
+
+      .add-movie
+        h3 Add Movie
+        label Genre:
+        select#movieGenre
+          each movies, name in service.genres
+            option(value=name)= name
+        br
+        label Title:
+        input#movieTitle(type='text', placeholder='Title')
+        br
+        label Description:
+        input#movieDesc(type='text', placeholder='Description')
+        br
+        label Year:
+        input#movieYear(type='number', placeholder='Year')
+        br
+        label Price: $
+        input#moviePrice(type='number', step='0.01', placeholder='Price')
+        br
+        button#addMovieBtn Add Movie
+
+      hr
+
+      h3 All Movies
+      each movies, genre in service.genres
+        h4= genre
+        if movies.length === 0
+          p No movies in this genre yet.
+        else
+          table.movies-table
+            thead
+              tr
+                th ID
+                th Title
+                th Description
+                th Year
+                th Price
+                th Remove
+            tbody
+              each movie in movies
+                tr(data-id=movie.id)
+                  td= movie.id
+                  td= movie.title
+                  td= movie.description
+                  td= movie.year
+                  td $#{movie.price.toFixed(2)}
+                  td
+                    img.remove-img(src='/images/remove.svg', alt='Remove', data-mid=movie.id)
+
+    script.
+      const SERVICE_ID = !{service.id};
+
+      document.getElementById('saveBtn').addEventListener('click', () => {
+        const name       = document.getElementById('editName').value.trim();
+        const serviceFee = document.getElementById('editFee').value;
+        const minOrder   = document.getElementById('editMin').value;
+        if (!name) { alert('Name must not be blank.'); return; }
+
+        fetch('/services/' + SERVICE_ID + '/info', {
+          method : 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body   : JSON.stringify({ name, serviceFee, minOrder })
+        })
+          .then(res => {
+            if (res.ok) alert('Changes saved successfully.');
+            else res.text().then(msg => alert('Error: ' + msg));
+          })
+          .catch(err => alert('Error: ' + err));
+      });
+
+      document.getElementById('addGenreBtn').addEventListener('click', () => {
+        const genre = document.getElementById('newGenreName').value.trim();
+        if (!genre) { alert('Genre name must not be blank.'); return; }
+
+        fetch('/services/' + SERVICE_ID + '/genres', {
+          method : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body   : JSON.stringify({ genre })
+        })
+          .then(res => {
+            if (res.ok) { alert('Genre added successfully.'); location.reload(); }
+            else res.text().then(msg => alert('Error: ' + msg));
+          })
+          .catch(err => alert('Error: ' + err));
+      });
+
+      document.getElementById('addMovieBtn').addEventListener('click', () => {
+        const genre       = document.getElementById('movieGenre').value;
+        const title       = document.getElementById('movieTitle').value.trim();
+        const description = document.getElementById('movieDesc').value.trim();
+        const year        = document.getElementById('movieYear').value.trim();
+        const price       = document.getElementById('moviePrice').value.trim();
+
+        if (!genre || !title || !description || !year || !price) {
+          alert('All movie fields must be filled in.');
+          return;
+        }
+
+        fetch('/services/' + SERVICE_ID + '/movies', {
+          method : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body   : JSON.stringify({ genre, title, description, year, price })
+        })
+          .then(res => {
+            if (res.ok) { alert('Movie added successfully.'); location.reload(); }
+            else res.text().then(msg => alert('Error: ' + msg));
+          })
+          .catch(err => alert('Error: ' + err));
+      });
+
+      document.querySelectorAll('.remove-img').forEach(img => {
+        img.addEventListener('click', () => {
+          const mID = img.dataset.mid;
+          if (!confirm('Delete this movie?')) return;
+
+          fetch('/services/' + SERVICE_ID + '/movies/' + mID, { method: 'DELETE' })
+            .then(res => {
+              if (res.ok) { alert('Movie deleted.'); location.reload(); }
+              else res.text().then(msg => alert('Error: ' + msg));
+            })
+            .catch(err => alert('Error: ' + err));
+        });
+      });

@@ -1,0 +1,26 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    title Streaming Service Statistics
+    link(rel='stylesheet', href='/styles/styles.css')
+  body
+    include header.pug
+    .stats-container
+      h2 Individual Streaming Service Statistics
+      table
+        thead
+          tr
+            th Service Name
+            th Total Movies Ordered
+            th Total Sales Revenue
+            th Average Order Cost
+            th Most Frequently Ordered Movie
+        tbody
+          each stat in statsData
+            tr
+              td= stat.name
+              td= stat.totalOrdered
+              td $#{stat.totalSales.toFixed(2)}
+              td $#{stat.avgCost.toFixed(2)}
+              td= stat.mostPopular || '—'

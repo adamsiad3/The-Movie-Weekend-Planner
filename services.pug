@@ -1,0 +1,77 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    title Movie Weekend Planner - Services
+    link(rel='stylesheet', href='/styles/styles.css')
+  body
+    include header.pug
+    .stats-container
+      h2 Streaming Services
+
+      ul.services-list
+        each service in services
+          li.service-item
+            a(href='/services/' + service.id)= service.name
+            img.remove-img(src='/images/remove.svg', alt='Remove', data-id=service.id)
+
+      .add-service
+        h3 Add New Service
+        input#newServiceName(type='text', placeholder='Service name')
+        button#addServiceBtn Add Service
+
+    script.
+      document.querySelectorAll('.remove-img').forEach(img => {
+        img.addEventListener('click', () => {
+          const id   = img.dataset.id;
+          const name = img.previousElementSibling.textContent;
+          if (!confirm('Delete service "' + name + '"?')) return;
+
+          fetch('/services/' + id, { method: 'DELETE' })
+            .then(res => {
+              if (res.ok) {
+                alert('Service deleted.');
+                img.closest('li').remove();
+              } else {
+                res.text().then(msg => alert('Error: ' + msg));
+              }
+            })
+            .catch(err => alert('Error: ' + err));
+        });
+      });
+
+      document.getElementById('addServiceBtn').addEventListener('click', () => {
+        const name = document.getElementById('newServiceName').value.trim();
+        if (!name) { alert('Service name must not be blank.'); return; }
+
+        fetch('/services', {
+          method : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body   : JSON.stringify({ name })
+        })
+          .then(res => {
+            if (res.ok) return res.json();
+            return res.text().then(msg => { throw new Error(msg); });
+          })
+          .then(data => {
+            alert('Service "' + data.service.name + '" added successfully.');
+            const ul = document.querySelector('.services-list');
+            const li = document.createElement('li');
+            li.className = 'service-item';
+            li.innerHTML = '<a href="/services/' + data.service.id + '">' + data.service.name + '</a>' +
+              '<img class="remove-img" src="/images/remove.svg" alt="Remove" data-id="' + data.service.id + '">';
+            li.querySelector('.remove-img').addEventListener('click', function() {
+              const sid   = this.dataset.id;
+              const sname = this.previousElementSibling.textContent;
+              if (!confirm('Delete service "' + sname + '"?')) return;
+              fetch('/services/' + sid, { method: 'DELETE' })
+                .then(r => {
+                  if (r.ok) { alert('Service deleted.'); li.remove(); }
+                  else r.text().then(msg => alert('Error: ' + msg));
+                });
+            });
+            ul.appendChild(li);
+            document.getElementById('newServiceName').value = '';
+          })
+          .catch(err => alert('Error: ' + err.message));
+      });

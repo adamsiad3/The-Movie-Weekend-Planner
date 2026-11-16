@@ -1,0 +1,44 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    title Movie Weekend Planner - Users
+    link(rel='stylesheet', href='/styles/styles.css')
+  body
+    include header.pug
+    .stats-container
+      h2 User Directory
+
+      ul.services-list
+        each u in users
+          li.service-item(class=(u.privacy ? 'user-private' : ''))
+            if u.privacy
+              span.user-name-private(title='This profile is private') #{u.username} 🔒
+            else
+              a(href='/users/' + u._id)= u.username
+            img.remove-img(
+              src='/images/remove.svg',
+              alt='Remove',
+              data-id=u._id.toString(),
+              data-name=u.username
+            )
+
+    script.
+      document.querySelectorAll('.remove-img').forEach(img => {
+        img.addEventListener('click', () => {
+          const id   = img.dataset.id;
+          const name = img.dataset.name;
+          if (!confirm('Delete user "' + name + '"?')) return;
+
+          fetch('/users/' + id, { method: 'DELETE' })
+            .then(res => {
+              if (res.ok) {
+                alert('User "' + name + '" deleted.');
+                img.closest('li').remove();
+              } else {
+                res.text().then(msg => alert('Error: ' + msg));
+              }
+            })
+            .catch(err => alert('Error: ' + err));
+        });
+      });

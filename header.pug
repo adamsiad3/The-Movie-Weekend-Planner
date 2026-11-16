@@ -1,0 +1,16 @@
+header(class='site-header')
+  div(class='header-left')
+    span(class='header-icon') 🎬
+    span(class='site-title') "Movie Weekend" Planner
+  nav(class='main-nav')
+    a(href='/', class=(activePage === 'home' ? 'active' : '')) Home
+    if !user
+      a(href='/login', class=(activePage === 'login' ? 'active' : '')) Login
+    if user
+      a(href='/order', class=(activePage === 'order' ? 'active' : '')) Order Form
+      a(href='/stats', class=(activePage === 'stats' ? 'active' : '')) Statistics
+      if user.admin
+        a(href='/services', class=(activePage === 'admin' ? 'active' : '')) Services
+        a(href='/users', class=(activePage === 'users' ? 'active' : '')) Users
+      a(href='/users/' + user._id, class=(activePage === 'profile' ? 'active' : '')) Profile
+      a(href='/logout') Logout
